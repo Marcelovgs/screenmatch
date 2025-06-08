@@ -1,8 +1,10 @@
 package oracle.projetoalura.Model;
 import jakarta.persistence.*;
-import oracle.projetoalura.Service.ConsultaMyMemory;
-import org.hibernate.annotations.ValueGenerationType;
 
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.OptionalDouble;
 
 @Entity
@@ -21,14 +23,21 @@ public class Serie {
     private String poster;
     private String sinopse;
 
+    @Transient
+    private List<Episodio> episodios = new ArrayList<>();
+
     public Serie(DadosSerie dadosSerie) {
         this.titulo = dadosSerie.titulo();
+        System.out.println("Sinopse raw: " + dadosSerie.sinopse());
         this.totalTemporadas = dadosSerie.totalTemporadas();
-        this.avaliacao = OptionalDouble.of(Double.valueOf(dadosSerie.avaliacao())).orElse(0);
+        this.avaliacao = Optional.ofNullable(dadosSerie.avaliacao())
+                .filter(s -> !s.isBlank())
+                .map(Double::valueOf)
+                .orElse(0.0);
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
-        this.sinopse = ConsultaMyMemory.traduzir(dadosSerie.sinopse() != null ? dadosSerie.sinopse() : "").trim();
+        this.sinopse = dadosSerie.sinopse();
 
     }
 
@@ -41,6 +50,14 @@ public class Serie {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public List<Episodio> getEpisodios() {
+        return episodios;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        this.episodios = episodios;
     }
 
     public String getTitulo() {
