@@ -1,19 +1,16 @@
 package oracle.projetoalura.Model;
 import jakarta.persistence.*;
 
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalDouble;
 
 @Entity
 @Table(name = "series")
-
 public class Serie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private String titulo;
     private Integer totalTemporadas;
     private Double avaliacao;
@@ -23,32 +20,26 @@ public class Serie {
     private String poster;
     private String sinopse;
 
-    @Transient
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Episodio> episodios = new ArrayList<>();
 
-    public Serie(DadosSerie dadosSerie) {
+    public Serie() {}
+
+    public Serie(DadosSerie dadosSerie){
         this.titulo = dadosSerie.titulo();
-        System.out.println("Sinopse raw: " + dadosSerie.sinopse());
         this.totalTemporadas = dadosSerie.totalTemporadas();
-        this.avaliacao = Optional.ofNullable(dadosSerie.avaliacao())
-                .filter(s -> !s.isBlank())
-                .map(Double::valueOf)
-                .orElse(0.0);
+        this.avaliacao = OptionalDouble.of(Double.valueOf(dadosSerie.avaliacao())).orElse(0);
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
         this.sinopse = dadosSerie.sinopse();
-
     }
 
-    public Serie() {
-    }
-
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -57,6 +48,7 @@ public class Serie {
     }
 
     public void setEpisodios(List<Episodio> episodios) {
+        episodios.forEach(e -> e.setSerie(this));
         this.episodios = episodios;
     }
 
@@ -119,13 +111,13 @@ public class Serie {
     @Override
     public String toString() {
         return
-                " genero=" + genero +
-                ", titulo='" + titulo + '\'' +
-                ", totalTemporadas=" + totalTemporadas +
-                ", avaliacao=" + avaliacao +
-                ", atores='" + atores + '\'' +
-                ", poster='" + poster + '\'' +
-                ", sinopse='" + sinopse + '\'';
-
+                "genero=" + genero +
+                        ", titulo='" + titulo + '\'' +
+                        ", totalTemporadas=" + totalTemporadas +
+                        ", avaliacao=" + avaliacao +
+                        ", atores='" + atores + '\'' +
+                        ", poster='" + poster + '\'' +
+                        ", sinopse='" + sinopse + '\'' +
+                        ", episodios='" + episodios + '\'';
     }
 }
